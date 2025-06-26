@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROYAL BAKES POS</title>
+    <meta name="description" content="Royal Bakes POS System">
+    <meta name="theme-color" content="#e67e22" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#b35900" media="(prefers-color-scheme: dark)">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; display:flex; justify-content:center; align-items:center;">
+        <div style="color:white; font-size:1.5rem;">
+            <i class="fas fa-spinner fa-spin"></i> Loading...
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-bread-slice"></i> Royal Bakes</h1>
+            <div id="shift-status" class="shift-off">Shift: Not Started</div>
+        </header>
+
+        <nav>
+            <button class="tab-btn active" data-tab="pos"><i class="fas fa-cash-register"></i> POS</button>
+            <button class="tab-btn" data-tab="receipts"><i class="fas fa-receipt"></i> Receipts</button>
+            <button class="tab-btn" data-tab="summary"><i class="fas fa-chart-bar"></i> Summary</button>
+            <button class="tab-btn" data-tab="stock"><i class="fas fa-boxes"></i> Stock</button>
+            <button class="tab-btn" data-tab="shift"><i class="fas fa-user-clock"></i> Shift</button>
+        </nav>
+
+        <main>
+            <!-- POS Tab -->
+            <div id="pos" class="tab-content active">
+                <div class="products-grid" id="products-grid">
+                    <!-- Products loaded dynamically -->
+                </div>
+                
+                <div class="cart-container">
+                    <h2><i class="fas fa-shopping-cart"></i> Cart</h2>
+                    <div id="cart-items">
+                        <!-- Cart items loaded dynamically -->
+                    </div>
+                    <div class="cart-total">
+                        <p>Total: <span id="cart-total">0</span> RWF</p>
+                    </div>
+                    <div class="payment-options">
+                        <label><input type="radio" name="payment" value="cash" checked> <i class="fas fa-money-bill-wave"></i> Cash</label>
+                        <label><input type="radio" name="payment" value="momo"> <i class="fas fa-mobile-alt"></i> MoMo</label>
+                    </div>
+                    <button id="checkout-btn" class="btn" disabled><i class="fas fa-check-circle"></i> Checkout</button>
+                    <div id="shift-closed-alert" class="alert alert-warning" style="display: none;">
+                        <i class="fas fa-exclamation-triangle"></i> Cannot checkout - shift is not started!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipts Tab -->
+            <div id="receipts" class="tab-content">
+                <div class="date-filter">
+                    <input type="date" id="receipt-date-filter">
+                    <button id="filter-receipts-btn" class="btn"><i class="fas fa-filter"></i> Filter</button>
+                </div>
+                <div id="receipts-list">
+                    <!-- Receipts loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Summary Tab -->
+            <div id="summary" class="tab-content">
+                <div class="date-range">
+                    <input type="date" id="start-date">
+                    <span>to</span>
+                    <input type="date" id="end-date">
+                    <button id="filter-summary-btn" class="btn"><i class="fas fa-filter"></i> Filter</button>
+                </div>
+                <div id="summary-content">
+                    <!-- Summary content loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Stock Tab -->
+            <div id="stock" class="tab-content">
+                <div id="low-stock-alerts" class="stock-alerts">
+                    <!-- Low stock alerts appear here -->
+                </div>
+                <div class="stock-form">
+                    <input type="text" id="item-name" placeholder="Item Name">
+                    <input type="number" id="item-price" placeholder="Price (RWF)">
+                    <input type="text" id="item-quantity" placeholder="Quantity or 'unlimited'">
+                    <button id="add-item-btn" class="btn"><i class="fas fa-plus"></i> Add Item</button>
+                </div>
+                <div id="stock-items">
+                    <!-- Stock items loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Shift Tab -->
+            <div id="shift" class="tab-content">
+                <div class="shift-controls">
+                    <button id="start-shift-btn" class="btn"><i class="fas fa-play"></i> Start Shift</button>
+                    <button id="end-shift-btn" class="btn" disabled><i class="fas fa-stop"></i> End Shift</button>
+                    <div id="whatsapp-section" style="display: none; margin-top: 20px;">
+                        <button id="send-whatsapp-btn" class="btn"><i class="fab fa-whatsapp"></i> Send Shift Summary via WhatsApp</button>
+                    </div>
+                </div>
+                <div id="shift-summary">
+                    <!-- Shift summary loaded dynamically -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Receipt Modal -->
+    <div id="receipt-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="receipt-content">
+                <!-- Receipt content loaded dynamically -->
+            </div>
+            <button id="copy-receipt-btn" class="btn"><i class="fas fa-copy"></i> Copy Receipt</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="/firebase.js"></script>
+    <script type="module" src="/script.js"></script>
+    
+    <script>
+        // Enhanced Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => {
+                        console.log('Service Worker registered');
+                        reg.update(); // Force update check
+                    })
+                    .catch(err => console.error('SW registration failed:', err));
+            });
+        }
+
+        // Loading state control
+        function showLoader() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+        }
+        function hideLoader() {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
